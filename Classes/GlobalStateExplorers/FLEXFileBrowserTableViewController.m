@@ -13,6 +13,8 @@
 #import "FLEXImagePreviewViewController.h"
 #import "FLEXTableListViewController.h"
 
+static NSString *_copyFilePath = nil;
+
 @interface FLEXFileBrowserTableViewCell : UITableViewCell
 @end
 
@@ -85,7 +87,40 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+}
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    if (_copyFilePath) {
+        UIBarButtonItem *pasteItem = [[UIBarButtonItem alloc] initWithTitle:@"Paste" style:UIBarButtonItemStyleDone target:self action:@selector(pasteClick)];
+        self.navigationItem.rightBarButtonItem = pasteItem;
+    }
+}
+
+//paste
+- (void)pasteClick
+{
+    NSString *path = [self.path stringByAppendingPathComponent:[_copyFilePath lastPathComponent]];
+    [self pasteWithPath:path];
+}
+
+- (void)pasteWithPath:(NSString *)path
+{
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        NSString *newPath = [path stringByDeletingPathExtension];
+        newPath = [[NSString stringWithFormat:@"%@Copy", newPath] stringByAppendingPathExtension:path.pathExtension];
+        [self pasteWithPath:newPath];
+    } else {
+        NSError *error = nil;
+        [[NSFileManager defaultManager] copyItemAtPath:_copyFilePath toPath:path error:&error];
+        [self reloadDisplayedPaths];
+        
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:@"Error!" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }
 }
 
 #pragma mark - FLEXFileBrowserSearchOperationDelegate
@@ -240,10 +275,11 @@
 
 - (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    UIMenuItem *copyMenuItem = [[UIMenuItem alloc] initWithTitle:@"Copy" action:@selector(fileBrowserCopy:)];
     UIMenuItem *renameMenuItem = [[UIMenuItem alloc] initWithTitle:@"Rename" action:@selector(fileBrowserRename:)];
     UIMenuItem *deleteMenuItem = [[UIMenuItem alloc] initWithTitle:@"Delete" action:@selector(fileBrowserDelete:)];
-    NSMutableArray *menus = [NSMutableArray arrayWithObjects:renameMenuItem, deleteMenuItem, nil];
-
+    NSMutableArray *menus = [NSMutableArray arrayWithObjects:copyMenuItem, renameMenuItem, deleteMenuItem, nil];
+    
     NSString *fullPath = [self filePathAtIndexPath:indexPath];
     NSError *error = nil;
     NSDictionary *attributes = [NSFileManager.defaultManager attributesOfItemAtPath:fullPath error:&error];
@@ -258,7 +294,7 @@
 
 - (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
 {
-    return action == @selector(fileBrowserDelete:) || action == @selector(fileBrowserRename:) || action == @selector(fileBrowserShare:);
+    return action == @selector(fileBrowserCopy:) || action == @selector(fileBrowserDelete:) || action == @selector(fileBrowserRename:) || action == @selector(fileBrowserShare:);
 }
 
 - (void)tableView:(UITableView *)tableView performAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
@@ -282,6 +318,13 @@
 
     [controller presentOptionsMenuFromRect:self.view.bounds inView:self.view animated:YES];
     self.documentController = controller;
+}
+
+- (void)fileBrowserCopy:(UITableViewCell *)sender
+{
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+    NSString *fullPath = [self filePathAtIndexPath:indexPath];
+    _copyFilePath = fullPath;
 }
 
 - (void)fileBrowserRename:(UITableViewCell *)sender
@@ -354,6 +397,12 @@
 
 
 @implementation FLEXFileBrowserTableViewCell
+
+- (void)fileBrowserCopy:(UITableViewCell *)sender
+{
+    id target = [self.nextResponder targetForAction:_cmd withSender:sender];
+    [[UIApplication sharedApplication] sendAction:_cmd to:target from:self forEvent:nil];
+}
 
 - (void)fileBrowserRename:(UIMenuController *)sender
 {
