@@ -51,6 +51,7 @@ static NSString *_copyFilePath = nil;
         self.searchController.searchResultsUpdater = self;
         self.searchController.delegate = self;
         self.searchController.dimsBackgroundDuringPresentation = NO;
+        self.searchController.hidesNavigationBarDuringPresentation = NO;
         self.tableView.tableHeaderView = self.searchController.searchBar;
 
         //computing path size

@@ -511,7 +511,7 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
     if (tapGR.state == UIGestureRecognizerStateRecognized && self.selectedView) {
         FLEXObjectExplorerViewController *selectedViewExplorer = [FLEXObjectExplorerFactory explorerViewControllerForObject:self.selectedView];
         selectedViewExplorer.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(selectedViewExplorerFinished:)];
-        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:selectedViewExplorer];
+        FLEXNavigationController *navigationController = [[FLEXNavigationController alloc] initWithRootViewController:selectedViewExplorer];
         [self makeKeyAndPresentViewController:navigationController animated:YES completion:nil];
     }
 }
@@ -874,7 +874,7 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
         NSDictionary *depthsForViews = [self hierarchyDepthsForViews:allViews];
         FLEXHierarchyTableViewController *hierarchyTVC = [[FLEXHierarchyTableViewController alloc] initWithViews:allViews viewsAtTap:self.viewsAtTapPoint selectedView:self.selectedView depths:depthsForViews];
         hierarchyTVC.delegate = self;
-        return [[UINavigationController alloc] initWithRootViewController:hierarchyTVC];
+        return [[FLEXNavigationController alloc] initWithRootViewController:hierarchyTVC];
     } completion:^{
         if (completion) {
             completion();
@@ -888,7 +888,7 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
         FLEXGlobalsTableViewController *globalsViewController = [[FLEXGlobalsTableViewController alloc] init];
         globalsViewController.delegate = self;
         [FLEXGlobalsTableViewController setApplicationWindow:[[UIApplication sharedApplication] keyWindow]];
-        return [[UINavigationController alloc] initWithRootViewController:globalsViewController];
+        return [[FLEXNavigationController alloc] initWithRootViewController:globalsViewController];
     } completion:nil];
 }
 

@@ -14,6 +14,17 @@
 #import "FLEXNetworkObserver.h"
 #import "FLEXNetworkSettingsTableViewController.h"
 
+@implementation FLEXNavigationController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.delegate = self;
+    [self.navigationBar setTranslucent:NO];
+}
+
+@end
+
 @interface FLEXNetworkHistoryTableViewController () <UISearchResultsUpdating, UISearchControllerDelegate>
 
 /// Backing model
@@ -66,6 +77,7 @@
     self.searchController.delegate = self;
     self.searchController.searchResultsUpdater = self;
     self.searchController.dimsBackgroundDuringPresentation = NO;
+    self.searchController.hidesNavigationBarDuringPresentation = NO;
     self.tableView.tableHeaderView = self.searchController.searchBar;
 
     [self updateTransactions];
@@ -76,7 +88,7 @@
     FLEXNetworkSettingsTableViewController *settingsViewController = [[FLEXNetworkSettingsTableViewController alloc] init];
     settingsViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(settingsViewControllerDoneTapped:)];
     settingsViewController.title = @"Network Debugging Settings";
-    UINavigationController *wrapperNavigationController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
+    FLEXNavigationController *wrapperNavigationController = [[FLEXNavigationController alloc] initWithRootViewController:settingsViewController];
     [self presentViewController:wrapperNavigationController animated:YES completion:nil];
 }
 
